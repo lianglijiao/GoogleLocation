@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Protype Target</title>
+    <meta name="viewpoint" content="initial-scale=1.0,user-scalable=no">
+    <meta charset="utf-8">
+
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/style.css">
+
+    <!--<script type="text/javascript" src="http://maps.googleapis.com/maps/api/js?sensor=true"></script>-->
+    <script src="https://maps.googleapis.com/maps/api/js?v=3.exp&libraries=places&sensor=true"></script>
+    <script type="text/javascript">
+
+        var initialLocation;
+        var taipei = new google.maps.LatLng(25.09108, 121.5598);
+        var browserSupportFlag = new Boolean();
+        var map;
+        var infowindow;
+        var service;
+
+        function initialize() {
+            var myOptions = {
+                zoom: 14,
+                mapTypeId: google.maps.MapTypeId.ROADMAP
+            };
+            map = new google.maps.Map(document.getElementById("map_canvas"), myOptions);
+
+            var pinColor = "00EE00";
+            var pinImage = "http://chart.apis.google.com/chart?chst=d_map_pin_letter&chld=%E2%80%A2|" + pinColor;
+
+            infowindow = new google.maps.InfoWindow();
+            service = new google.maps.places.PlacesService(map);
+
+            // Try W3C Geolocation (Preferred)
+            if (navigator.geolocation) {
+                browserSupportFlag = true;
+                navigator.geolocation.getCurrentPosition(function (position) {
+                    var initialLocation = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
+                    map.setCenter(initialLocation);
+
+                    console.log('Latitude:' + position.coords.latitude);
+                    console.log('Longitude:' + position.coords.longitude);
+
+                    var marker = new google.maps.Marker({
+                        position: initialLocation,
+                        map: map,
+                        title: "vous etez ici",
+                        icon: pinImage
+                    });
+
+                    var request = {
+
+                        location: initialLocation,
+                        radius: 500,
+                        //rankBy:google.maps.places.RankBy.DISTANCE,
+                        keyword:'food',
+                        type: ['food']
+
+                    };
+                    service.nearbySearch(request, callback);
+
+                }, function () {
+                    handleNoGeolocation(browserSupportFlag);
+                });
+            }
+            // Browser doesn't support Geolocation
+            else {
+                browserSupportFlag = false;
+                handleNoGeolocation(browserSupportFlag);
+            }
+
+            function handleNoGeolocation(errorFlag) {
+                if (errorFlag == true) {
+                    alert("地圖定位失敗");
+                } else {
+                    alert("您的瀏覽器不支援定位服務");
+                }
+                initialLocation = taipei;
+                map.setCenter(initialLocation);
+            }
+
+        }
+
+        function callback(results, status) {
+
+            console.log("status:" + google.maps.places.PlacesServiceStatus);
+            if (status == google.maps.places.PlacesServiceStatus.OK) {
+                for (var i = 0; i < results.length; i++) {
+                    createMarker(results[i]);
+                }
+            }
+
+        }
+
+        function createMarker(place) {
+            var placeLoc = place.geometry.location;
+            var marker = new google.maps.Marker({
+                map: map,
+                position: place.geometry.location
+            });
+
+            google.maps.event.addListener(marker, 'click', function () {
+
+                infowindow.close();
+                var request = {
+                    reference: place.reference
+                };
+
+                service.getDetails(request, function (place, status) {
+                    var content = "<h5>" + place.name + "</h5>";
+                    if (status == google.maps.places.PlacesServiceStatus.OK) {
+                        if (typeof place.rating !== 'undefined') {
+                            var badgeType = '';
+                            if (place.rating < 2) {
+                                badgeType = 'badge-important';
+                            } else if (place.rating >= 2 && place.rating <= 3) {
+                                badgeType = 'badge-warning';
+                            } else {
+                                badgeType = 'badge-success';
+                            }
+                            content += "<p><small>Rating: <span class='badge " + badgeType + "'>" + place.rating + "</span></small></p>";
+                        }
+
+                        if (typeof place.formatted_address !== 'undefined') {
+                            content += "<br><small>" + place.formatted_address + "</small>";
+                        }
+
+                        if (typeof place.formatted_phone_number !== 'undefined') {
+                            content += "<br><small><a href='tel:" + place.formatted_phone_number + "'>" + place.formatted_phone_number + "</a></small>";
+                        }
+
+                        if (typeof place.website !== 'undefined') {
+                            content += "<br><small><a href='" + place.website + "'>website</a></small>";
+
+                        }
+                    }
+
+                    infowindow.setContent(content);
+                    infowindow.open(map, marker)
+
+                });
+
+            });
+
+        }
+
+    </script>
+</head>
+
+<body onload="initialize()">
+<div id="map_canvas" style="width:1024px; height:768px"></div>
+</body>
+</html>
+
+
+

@@ -1,0 +1,60 @@
+html { height: 100% }
+
+body { height: 100%; margin: 0; padding: 0; }
+
+body {
+    overflow: hidden;
+}
+
+.navbar {
+    z-index: 100;
+}
+
+.navbar-fixed-top .navbar-inner
+{
+    padding-left: 15px; 
+    padding-right: 15px;
+}
+
+
+.navbar .input-append .btn {
+    margin: 0px;
+}
+
+#content {
+    position: absolute;
+    top: 0px;
+    bottom: 0px;
+    padding-top: 40px;
+    width: 100%;
+}
+
+#padded-content {
+    height: 100%;
+}
+
+
+@media (max-width: 979px) {
+  body {
+    padding-top: 0px;
+  }
+  
+  .navbar-fixed-top {
+    margin-bottom: 0px;
+    position: fixed;
+  }
+}
+
+@media (max-width: 767px) {
+    body {
+        padding-left: 0px;
+        padding-right: 0px;
+    }
+    
+    .navbar-fixed-top {
+        padding-left: 10px;
+        padding-right: 10px;
+        position: fixed;
+    }
+}
+
